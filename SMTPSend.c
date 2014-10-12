@@ -85,14 +85,32 @@ int main(int argc, char **argv){
     /***************************************************************************/
     //Send and receive buffer
     char recvBuffer[1024], sendBuffer[4096];
+    memset(sendBuffer, 0, sizeof(sendBuffer));
+    memset(recvBuffer, 0, sizeof(recvBuffer));
     //Message size
     int msgSize;
     
     msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer));
-    int writeItr;
-    for(writeItr = 0; writeItr < msgSize; writeItr++){
-        putchar(recvBuffer[writeItr]);
-    }
+    fprintf(stdout, "%s", recvBuffer);
+    
+    //Send our hello to the server
+    sprintf(sendBuffer, "ehlo %s\n", domain);
+    write(sockfd, sendBuffer, strlen(sendBuffer));
+    
+    //Print the response
+    msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer)); 
+    fprintf(stdout, "%s", recvBuffer);
+
+    memset(sendBuffer, 0, sizeof(sendBuffer));
+    memset(recvBuffer, 0, sizeof(recvBuffer));
+    //Exit from the server
+    sprintf(sendBuffer, "quit\n");
+    write(sockfd, sendBuffer, strlen(sendBuffer));
+    
+     //Print the response
+    msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer));
+    fprintf(stdout, "%s", recvBuffer);
+    
     /***************************************************************************/
     
     
