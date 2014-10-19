@@ -64,12 +64,12 @@ int main(int argc, char **argv){
         if(iter->ai_family == AF_INET){
             sockfd = sockfd4;
             h1 = (struct sockaddr_in*)h;
-            inet_ntop(AF_INET, &(h1->sin_addr), address, sizeof(h1->sin_addr));
+            inet_ntop(AF_INET, &(h1->sin_addr), address, INET_ADDRSTRLEN);
         }
         else if(iter->ai_family == AF_INET6){
             sockfd = sockfd6;
             h2 = (struct sockaddr_in6*)h;
-            inet_ntop(AF_INET6, &(h2->sin6_addr), address, sizeof(h2->sin6_addr));
+            inet_ntop(AF_INET6, &(h2->sin6_addr), address, INET6_ADDRSTRLEN);
         }
         
         fprintf(stdout, "Connecting to %s\n", address);
@@ -98,6 +98,19 @@ int main(int argc, char **argv){
     recvBuffer[msgSize] = '\0';
 //    fprintf(stdout, "%s", recvBuffer);
     
+    //Get the domain name
+    /*****************************************************/
+    int result;
+    char *temp, *token;
+    do{
+        token = strtok_r(recvBuffer, "\r\n", &temp);
+        result = strcmp(temp, "");
+    }while (result != 0);        
+
+    sscanf(token, "%d %s", &result, domain);
+    fprintf(stdout, "%s\n", domain);
+    /*****************************************************/
+    
     //Send our hello to the server
     sprintf(sendBuffer, "EHLO %s\n", domain);
     write(sockfd, sendBuffer, strlen(sendBuffer));
@@ -110,7 +123,6 @@ int main(int argc, char **argv){
     free(domain);
     //Sending e-mail
     /***************************************************************************/
-    int result;
     char *mail = (char*)malloc(sizeof(char) * 50);
     //Specify the sender
     do{
@@ -125,8 +137,9 @@ int main(int argc, char **argv){
         msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
         recvBuffer[msgSize] = '\0';
 //        fprintf(stdout, "%s", recvBuffer);
-        result = strcmp(recvBuffer, "250 2.1.0 Ok\r\n");
-    }while(result != 0);
+//        result = strcmp(recvBuffer, "250 2.1.0 Ok\r\n");
+        sscanf(recvBuffer, "%d", &result);
+    }while(result != 250);
     
     char *sender = (char*)malloc(sizeof(char) * 50);
     strcpy(sender, mail);
@@ -144,9 +157,9 @@ int main(int argc, char **argv){
         msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
         recvBuffer[msgSize] = '\0';
 //        fprintf(stdout, "%s", recvBuffer);
-        result = strcmp(recvBuffer, "250 2.1.5 Ok\r\n");
-        if(result != 0) fprintf(stderr, "There is no such address in this server\n");
-    }while(result != 0);
+        sscanf(recvBuffer, "%d", &result);
+        if(result != 250) fprintf(stderr, "There is no such address in this server\n");
+    }while(result != 250);
         
     char *reciever = (char*)malloc(sizeof(char) * 50);
     strcpy(reciever, mail);
@@ -198,7 +211,7 @@ int main(int argc, char **argv){
         result = strcmp(sendBuffer, ".\n");
     } while (result != 0);
 
-     msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+    msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
     recvBuffer[msgSize] = '\0';
     fprintf(stdout, "%s", recvBuffer);
     
