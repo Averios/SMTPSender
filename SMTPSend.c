@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <time.h>
+#include <fcntl.h>
 
 int main(int argc, char **argv){
     char *domain = (char*)malloc(sizeof(char) * 512);
@@ -17,7 +18,7 @@ int main(int argc, char **argv){
     /***************************************************************************/
     printf("Please insert the mail server domain :\n");
     printf("smtp://");
-    scanf("%s",domain);
+    scanf("%s", domain);
     /***************************************************************************/
     
     //Create socket
@@ -114,11 +115,15 @@ int main(int argc, char **argv){
     //Send our hello to the server
     sprintf(sendBuffer, "EHLO %s\n", domain);
     write(sockfd, sendBuffer, strlen(sendBuffer));
+//    usleep(100000);   //Wait for server to send data
     
     //Get the response
+    //Use nonblocking socket
+//    fcntl(sockfd, F_SETFL, O_NONBLOCK);
     msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
     recvBuffer[msgSize] = '\0';
 //    fprintf(stdout, "%s", recvBuffer);
+    
 
     free(domain);
     //Sending e-mail
@@ -128,7 +133,7 @@ int main(int argc, char **argv){
     do{
         //Get the sender
         fprintf(stdout, "Specify the sender : ");
-        scanf("%s", mail);
+        fscanf(stdin, "%s", mail);
         sprintf(sendBuffer,"MAIL FROM: %s\n",mail);
         
         write(sockfd, sendBuffer, strlen(sendBuffer));
@@ -148,7 +153,7 @@ int main(int argc, char **argv){
     do{
         //Get the receiver
         fprintf(stdout, "Specify the recipient : ");
-        scanf("%s", mail);
+        fscanf(stdin, "%s", mail);
         sprintf(sendBuffer,"RCPT TO: %s\n",mail);
         
         write(sockfd, sendBuffer, strlen(sendBuffer));
@@ -171,7 +176,7 @@ int main(int argc, char **argv){
     
     msgSize = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
     recvBuffer[msgSize] = '\0';
-//    fprintf(stdout, "%s", recvBuffer);
+    fprintf(stdout, "%s", recvBuffer);
     
     //Get current time
     char *dates = (char*)malloc(sizeof(char) * 512);
@@ -189,6 +194,7 @@ int main(int argc, char **argv){
     write(sockfd, sendBuffer, strlen(sendBuffer));
     
     //Write the subject
+    getc(stdin);
     fprintf(stdout, "Subject : ");
     fgets(sendBuffer, sizeof(sendBuffer), stdin);
     
