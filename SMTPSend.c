@@ -11,6 +11,7 @@
 
 #include <time.h>
 #include <fcntl.h>
+#include "cencode.h"
 
 int serv_connect(const char* server, const char* protocol);
 int handshake(int sockfd);
@@ -104,6 +105,8 @@ int main(int argc, char **argv){
     free(receiver);
     
     //Put an attachment
+    fprintf(stdout, "Do wou want to include an attachment?(y/n)");
+    fgets(stdin, recvBuffer, sizeof(recvBuffer));
     
     
     //Write the message

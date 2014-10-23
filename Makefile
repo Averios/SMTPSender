@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=SMTPSend.c
+SOURCES=SMTPSend.c cencode.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=SMTPSend
 
