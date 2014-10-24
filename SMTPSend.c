@@ -105,9 +105,9 @@ int main(int argc, char **argv){
     free(receiver);
     
     //Put an attachment
-    fprintf(stdout, "Do wou want to include an attachment?(y/n)");
-    fgets(stdin, recvBuffer, sizeof(recvBuffer));
-    
+//    fprintf(stdout, "Do wou want to include an attachment?(y/n)");
+//    fgets(stdin, recvBuffer, sizeof(recvBuffer));
+//    
     
     //Write the message
     /***************************************************************************/
@@ -246,7 +246,30 @@ int handshake(int sockfd){
     
     return 0;
 }
-int setAttachment(int sockfd, const char* path);
+int setAttachment(int sockfd, const char* path){
+    int filed = 0;
+    if((filed = open(path, O_RDONLY)) < 0){
+        fprintf(stdout, "Error opening file\n");
+        return 1;
+    }
+    char readBufer[510], base64Buff[1024];
+    base64_encodestate encoder;
+    
+    memset(readBufer, '\0', sizeof(readBufer));
+    memset(base64Buff, '\0', sizeof(base64Buff));
+    base64_init_encodestate(&encoder);
+    int msgSize;
+    int encodeSize;
+    while((msgSize = read(filed, readBufer, sizeof(readBufer))) > 0){
+        if((encodeSize = base64_encode_block(readBufer, msgSize, base64Buff, &encoder)) < 0){
+            fprintf(stdout, "Error encoding file\n");
+            return 1;
+        }
+        write(sockfd, base64Buff, encodeSize);
+    }
+    
+    return 0;
+}
 void writeMetadata(int sockfd, const char* sender, const char* receiver){
     int msgSize;
     char buff[512];
